@@ -8,17 +8,27 @@ class EventIntervalSequance (idS: Integer, evIntList: List[EventsInterval]){
     for(x <- sequence) {
       for(y <- x.events){
         var propString: String = ""
-        for((k,v) <- y.attributes){
-          propString = propString + "(" + k + " , " + v + "), "
+        if (y.attributes != null) {
+          for ((k, v) <- y.attributes) {
+            propString = propString + "(" + k + " , " + v + "), "
+          }
+          println("EVENT  |  Timestamp: " + y.timestamp.toString + " Properties: " + propString.dropRight((2)))
         }
-        println("EVENT  |  Timestamp: " + y.timestamp.toString + " Properties: " + propString.dropRight((2)))
+        else {
+          println("EVENT  |  Timestamp: " + y.timestamp.toString + " Properties: null")
+        }
       }
      if(x.interval != null) {
        var propString: String = ""
-       for ((k, v) <- x.interval.attributes) {
-         propString = propString + "(" + k + " , " + v + "), "
+       if (x.interval.attributes != null) {
+         for ((k, v) <- x.interval.attributes) {
+           propString = propString + "(" + k + " , " + v + "), "
+         }
+         println("INTERVAL  |   Properties: " + propString.dropRight((2)))
        }
-       println("INTERVAL  |   Properties: " + propString.dropRight((2)))
+       else {
+         println("INTERVAL  |   Properties: null")
+       }
      }
     }
 
