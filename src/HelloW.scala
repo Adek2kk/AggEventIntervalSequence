@@ -33,8 +33,12 @@ object HelloW {
     var testClass3 = new TestSequences()
     var seqeunces = testClass3.setTestSequences()
 
-    var testClass4 = new AggregateSequences()
-    testClass4.aggragate(seqeunces,listSel,listSel2,listWhe,listWhe2)
+   // var testClass4 = new AggregateSequences()
+    //testClass4.aggragate(seqeunces,listSel,listSel2,listWhe,listWhe2)
+
+    var testClass5 = new ImportSequence()
+    var seqImp = testClass5.importSequence("")
+    seqImp.printSequence()
 
   }
 
