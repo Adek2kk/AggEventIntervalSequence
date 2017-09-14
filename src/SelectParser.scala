@@ -14,8 +14,8 @@ class SelectParser {
       else {
       tmp = x
       }
-      var secondSplitArray = tmp.split(" ")
-      var selEv = new SelectEvent(secondSplitArray(0).dropRight(1), secondSplitArray(1))
+      var secondSplitArray = tmp.replace("  "," ").split(" ")
+      var selEv = new SelectEvent(secondSplitArray(0).dropRight(1), secondSplitArray(1), secondSplitArray(4))
       selectList += selEv
     }
       val  finalList = selectList.toList
@@ -35,13 +35,13 @@ class SelectParser {
         tmp = x
       }
 
-      var secondSplitArray = tmp.split(" ")
+      var secondSplitArray = tmp.replace("  "," ").split(" ")
       if(secondSplitArray(2) == "divide") {
-        var selInt = new SelectInterval(secondSplitArray(0).dropRight(1), secondSplitArray(1), true)
+        var selInt = new SelectInterval(secondSplitArray(0).dropRight(1), secondSplitArray(1), true, secondSplitArray(5))
         selectList += selInt
       }
       else {
-        var selInt = new SelectInterval(secondSplitArray(0).dropRight(1), secondSplitArray(1), false)
+        var selInt = new SelectInterval(secondSplitArray(0).dropRight(1), secondSplitArray(1), false, secondSplitArray(4))
         selectList += selInt
       }
 
