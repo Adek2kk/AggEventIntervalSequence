@@ -1,5 +1,3 @@
-import org.apache.zookeeper.Watcher.Event
-
 import scala.collection.mutable.ListBuffer
 
 class AggregateSequences {
@@ -207,11 +205,24 @@ class AggregateSequences {
           conditionTest = checkConditionNumeric(event.attributes.getOrElse(condition.attributeName, null).toDouble, condition.operation, condition.valueWhere.toDouble)
         }
         else {
+          var attValue = event.attributes.getOrElse(condition.attributeName, null)
           if (condition.operation == "==") {
-            conditionTest = condition.valueWhere == event.attributes.getOrElse(condition.attributeName, null)
+            if(attValue.charAt(0) == '[') {
+              var attList = attValue.dropRight(1).drop(1).split(',').toList
+              conditionTest = attList.contains(condition.valueWhere)
+            }
+            else{
+              conditionTest = condition.valueWhere == attValue
+            }
           }
           else if (condition.operation == "!=") {
-            conditionTest = condition.valueWhere != event.attributes.getOrElse(condition.attributeName, null)
+            if(attValue.charAt(0) == '[') {
+              var attList = attValue.dropRight(1).drop(1).split(',').toList
+              conditionTest = !attList.contains(condition.valueWhere)
+            }
+            else{
+              conditionTest = condition.valueWhere != attValue
+            }
           }
           else {
             conditionTest = false
@@ -234,11 +245,24 @@ class AggregateSequences {
           conditionTest = checkConditionNumeric(interval.attributes.getOrElse(condition.attributeName, null).toDouble, condition.operation, condition.valueWhere.toDouble)
         }
         else {
+          var attValue = interval.attributes.getOrElse(condition.attributeName, null)
           if (condition.operation == "==") {
-            conditionTest = condition.valueWhere == interval.attributes.getOrElse(condition.attributeName, null)
+            if(attValue.charAt(0) == '[') {
+                var attList = attValue.dropRight(1).drop(1).split(',').toList
+                conditionTest = attList.contains(condition.valueWhere)
+            }
+            else{
+              conditionTest = condition.valueWhere == attValue
+            }
           }
           else if (condition.operation == "!=") {
-            conditionTest = condition.valueWhere != interval.attributes.getOrElse(condition.attributeName, null)
+            if(attValue.charAt(0) == '[') {
+              var attList = attValue.dropRight(1).drop(1).split(',').toList
+              conditionTest = !attList.contains(condition.valueWhere)
+            }
+            else{
+              conditionTest = condition.valueWhere != attValue
+            }
           }
           else {
             conditionTest = false

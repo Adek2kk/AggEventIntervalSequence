@@ -11,7 +11,7 @@ class TestSequences {
     var evInt = new EventsInterval(eventsList.toList, new Interval(1, collection.mutable.Map[String, String]("pradI" -> "124", "pradI_div" -> "100", "pradI_text" -> "ON")))
     seqInnerList1 += evInt
 
-    event = new Event(1, 4, collection.mutable.Map[String, String]("prad" -> "134", "prad_text" -> "Alaska2"))
+    event = new Event(1, 4, collection.mutable.Map[String, String]("prad" -> "134", "prad_text" -> "[Alaska,Alaska2]"))
     eventsList = new ListBuffer[Event]()
     eventsList += event
     evInt = new EventsInterval(eventsList.toList, new Interval(1, collection.mutable.Map[String, String]("pradI" -> "114", "pradI_div" -> "90", "pradI_text" -> "OFF")))
