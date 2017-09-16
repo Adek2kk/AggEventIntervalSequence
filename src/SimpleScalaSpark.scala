@@ -1,6 +1,8 @@
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkConf
 
+import scala.collection.mutable.ListBuffer
+
 object SimpleScalaSpark {
 
   def main(args: Array[String]) {
@@ -27,16 +29,73 @@ object SimpleScalaSpark {
     var testClass2 = new WhereParser()
     val listWhe = testClass2.parseWhere(test3)
     val listWhe2 = testClass2.parseWhere(test4)
-
+/*
 
     var testClass3 = new TestSequences()
     var seqeunces = testClass3.setTestSequences()
     val rdd = sc.parallelize(seqeunces)
-    println(rdd.filter(_.idSequence ==1).count)
-    var aa = rdd.filter(_.idSequence ==1).collect().toList
+    println(rdd.filter(_.idSequence == 1).count)
+    var aa = rdd.filter(_.idSequence == 1).collect().toList
     var testClass4 = new AggregateSequences()
-    var bb = testClass4.aggragate(aa, 500,listSel,listSel2,listWhe,listWhe2)
-    bb.printSequence()
-  }
+    var bb = testClass4.aggregate(aa, 500,test,test2,test3,test4)
+    bb.printSequence()*/
 
+
+    val files: List[String] = List("power_11", "power_12","power_13","power_21","power_22","power_23","power_31","power_32","power_33","power_41","power_42","power_43","power_51","power_52","power_53")
+
+    import scala.collection.mutable.ListBuffer
+
+    var seqBufList = new ListBuffer[EventIntervalSequence]()
+
+    val importSeq = new ImportSequence()
+
+    for(f <- files){
+      seqBufList += importSeq.importSequence("C:/Users/adamc/Desktop/" + f + ".txt")
+    }
+
+    for(se <- seqBufList) {
+      println(se.idSequence)
+    }
+
+
+    val selEv = "concat( type_device ) AS concat_type_device"
+
+    val selInt = "avg( power_consum ) AS avg_power_consum, min( power_consum ) AS min_power_consum, max( power_consum divide ) AS max_power_consum_div, max( power_consum ) AS max_power_consum, concat( status ) AS concat_status"
+
+    val whEv = ""
+
+    val whInt = "power_consum != 0"
+
+
+    val rdd = sc.parallelize(seqBufList.toList)
+
+
+    println(rdd.filter(_.idSequence < 41).count)
+
+    var aggSeq = new AggregateSequences()
+
+
+
+    var testSeq = rdd.filter(_.idSequence < 41).collect().toList
+
+    var seqFirst = aggSeq.aggregate(testSeq, 80,selEv,selInt,whEv,whInt)
+
+    seqFirst.exportSequenceToFile("power", "C:/Users/adamc/Desktop/")
+
+
+    var testSeq2 = rdd.filter(_.idSequence >= 41).collect().toList
+
+    var seqSecond = aggSeq.aggregate(testSeq2, 81,selEv,selInt,whEv,whInt)
+
+    seqSecond.exportSequenceToFile("power", "C:/Users/adamc/Desktop/")
+
+
+
+    val selInt2 = "avg( avg_power_consum ) AS avg_power_consum_full, concat( concat_status ) AS concat_status_full"
+
+    var seqFull = aggSeq.aggregate(List(seqFirst,seqSecond), 82,"",selInt2,"","")
+
+    seqFull.exportSequenceToFile("power", "C:/Users/adamc/Desktop/")
+
+  }
 }

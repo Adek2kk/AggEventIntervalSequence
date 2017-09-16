@@ -10,12 +10,17 @@ class AggregateSequences {
   var whInterval: List[WhereEvInt] = null
   var idSeq: Integer = 0
 
-  def aggragate(sequences: List[EventIntervalSequance], idSequence: Integer, selectEvent: List[SelectEvent], selectInterval: List[SelectInterval], whereEvent: List[WhereEvInt], whereInterval: List[WhereEvInt]): EventIntervalSequance = {
+  def aggregate(sequences: List[EventIntervalSequence], idSequence: Integer, selectEvent: String, selectInterval: String, whereEvent: String, whereInterval: String): EventIntervalSequence = {
 
-    selEvent = selectEvent
-    selInterval = selectInterval
-    whEvent = whereEvent
-    whInterval = whereInterval
+    var selectParser = new SelectParser()
+    var whereParser = new WhereParser()
+    tempEvents = new ListBuffer[Event]()
+    tempIntervals = new ListBuffer[IntervalHelper]()
+
+    selEvent = selectParser.parseEvent(selectEvent)
+    selInterval = selectParser.parseInterval(selectInterval)
+    whEvent = whereParser.parseWhere(whereEvent)
+    whInterval = whereParser.parseWhere(whereInterval)
     idSeq = idSequence
     fillTempLists(sequences)
     //printTempListsPhaseOne()
@@ -27,7 +32,7 @@ class AggregateSequences {
     return finalSeq
   }
 
-  private def fillTempLists(sequences: List[EventIntervalSequance]) = {
+  private def fillTempLists(sequences: List[EventIntervalSequence]) = {
 
     for(sequence <- sequences) {
       var timeStart = -1
@@ -90,15 +95,9 @@ class AggregateSequences {
     }
   }
 
-  private def createNewSequence(): EventIntervalSequance = {
+  private def createNewSequence(): EventIntervalSequence = {
     var timeStart = tempEvents.toList.sortWith(_.timestamp < _.timestamp).head.timestamp
     var timeEnd = 0
-
-   /* var eventCount = 0
-    var eventNullCount = 0
-
-    var interCount = 0
-    var interNullCount = 0*/
 
     var sameTimeEventList = new ListBuffer[Event]()
     var innerSeqList = new ListBuffer[EventsInterval]()
@@ -108,8 +107,10 @@ class AggregateSequences {
 
           if(ev.attributes != null){
             sameTimeEventList += new Event(ev.idSequence,ev.timestamp,ev.attributes)
-            //Na podstawie select obliczenie wartości
-            calculateEventSelect(ev)
+            //Na podstaw1ie select obliczenie wartości
+            if(selEvent != null) {
+              calculateEventSelect(ev)
+            }
           }
       }
       else {
@@ -119,8 +120,9 @@ class AggregateSequences {
           //println(interv.start + " " + interv.end )
           if(interv.interval.attributes != null){
             //Select dla interval
-            calculateIntervalSelect(interv, timeStart, timeEnd)
-
+            if(selInterval != null){
+              calculateIntervalSelect(interv, timeStart, timeEnd)
+            }
           }
         }
 
@@ -160,9 +162,10 @@ class AggregateSequences {
         if(ev.attributes != null) {
           sameTimeEventList += new Event(ev.idSequence, ev.timestamp, ev.attributes)
           //Na podstawie select obliczenie wartości
-          calculateEventSelect(ev)
+          if (selEvent != null) {
+            calculateEventSelect(ev)
+          }
         }
-
       }
     }
 
@@ -177,10 +180,9 @@ class AggregateSequences {
     }
     var pairEvInt = new EventsInterval(sameTimeEventList.toList,null)
     innerSeqList += pairEvInt
-    var finalSeq = new EventIntervalSequance(idSeq,innerSeqList.toList)
+    var finalSeq = new EventIntervalSequence(idSeq,innerSeqList.toList)
     return finalSeq
   }
-
 
   private def checkConditionNumeric(attrVal: Double, operation: String, condVal: Double): Boolean = {
 
@@ -358,33 +360,37 @@ class AggregateSequences {
   }
 
   private def addAttrEvent(attMap: collection.mutable.Map[String, String]):collection.mutable.Map[String, String] = {
+    if(selEvent != null) {
+      for (sel <- selEvent) {
+        if (sel.firstValueFlag == false) {
+          if (sel.operation != "concat") {
 
-    for(sel <- selEvent) {
-      if(sel.firstValueFlag == false){
-        if(sel.operation != "concat") {
-
-          sel.operation match {
-            case "max" => attMap += (sel.newName -> sel.maxValue.toString())
-            case "min" => attMap += (sel.newName -> sel.minValue.toString())
-            case "avg" => attMap += (sel.newName -> sel.avgValue.toString())
-            case "count" => attMap += (sel.newName -> sel.countValue.toString())
-            case "sum" => attMap += (sel.newName -> sel.sumValue.toString())
-          }
-        }
-        else {
-          if(sel.stringValue.count(_ == ',') == 1){
-            attMap += (sel.newName -> sel.stringValue.dropRight(1))
+            sel.operation match {
+              case "max" => attMap += (sel.newName -> sel.maxValue.toString())
+              case "min" => attMap += (sel.newName -> sel.minValue.toString())
+              case "avg" => attMap += (sel.newName -> sel.avgValue.toString())
+              case "count" => attMap += (sel.newName -> sel.countValue.toString())
+              case "sum" => attMap += (sel.newName -> sel.sumValue.toString())
+            }
           }
           else {
-            var tempString = "[" + sel.stringValue.dropRight(1) + "]"
-            attMap += (sel.newName -> tempString)
-          }
+            if (sel.stringValue.count(_ == ',') == 1) {
+              attMap += (sel.newName -> sel.stringValue.dropRight(1))
+            }
+            else {
+              var tempString = "[" + sel.stringValue.dropRight(1) + "]"
+              attMap += (sel.newName -> tempString)
+            }
 
+          }
         }
       }
-    }
 
-    return attMap
+      return attMap
+    }
+    else{
+      return attMap
+    }
   }
 
   private def calculateIntervalSelect(inter: IntervalHelper, timeStart: Integer, timeEnd: Integer) = {
@@ -473,34 +479,38 @@ class AggregateSequences {
   }
 
   private def createAttrInterval():collection.mutable.Map[String, String] = {
+    if(selInterval != null){
+      var attMap = scala.collection.mutable.Map[String, String]()
+      for(sel <- selInterval) {
+        if(sel.firstValueFlag == false){
+          if(sel.operation != "concat") {
 
-    var attMap = scala.collection.mutable.Map[String, String]()
-    for(sel <- selInterval) {
-      if(sel.firstValueFlag == false){
-        if(sel.operation != "concat") {
-
-          sel.operation match {
-            case "max" => attMap += (sel.newName -> sel.maxValue.toString())
-            case "min" => attMap += (sel.newName -> sel.minValue.toString())
-            case "avg" => attMap += (sel.newName -> sel.avgValue.toString())
-            case "count" => attMap += (sel.newName -> sel.countValue.toString())
-            case "sum" => attMap += (sel.newName -> sel.sumValue.toString())
-          }
-        }
-        else {
-          if(sel.stringValue.count(_ == ',') == 1){
-            attMap += (sel.newName -> sel.stringValue.dropRight(1))
+            sel.operation match {
+              case "max" => attMap += (sel.newName -> sel.maxValue.toString())
+              case "min" => attMap += (sel.newName -> sel.minValue.toString())
+              case "avg" => attMap += (sel.newName -> sel.avgValue.toString())
+              case "count" => attMap += (sel.newName -> sel.countValue.toString())
+              case "sum" => attMap += (sel.newName -> sel.sumValue.toString())
+            }
           }
           else {
-            var tempString = "[" + sel.stringValue.dropRight(1) + "]"
-            attMap += (sel.newName -> tempString)
-          }
+            if(sel.stringValue.count(_ == ',') == 1){
+              attMap += (sel.newName -> sel.stringValue.dropRight(1))
+            }
+            else {
+              var tempString = "[" + sel.stringValue.dropRight(1) + "]"
+              attMap += (sel.newName -> tempString)
+            }
 
+          }
         }
       }
-    }
 
-    return attMap
+      return attMap
+    }
+    else(
+      return null
+    )
   }
 
   private def calculateDivIntervalValue(value: Double, inStart: Integer, inEnd: Integer, inStartNew: Integer, inEndNew: Integer): Double = {
@@ -528,11 +538,15 @@ class AggregateSequences {
   }
 
   private def resetSelectLists() = {
-    for(x <- selEvent){
-      x.clear
+    if (selEvent != null){
+      for(x <- selEvent){
+        x.clear
+      }
     }
-    for(x <- selInterval){
-      x.clear
+    if (selInterval != null){
+        for(x <- selInterval){
+        x.clear
+      }
     }
   }
 
@@ -563,5 +577,6 @@ class AggregateSequences {
       }
     }
   }
+
 
 }

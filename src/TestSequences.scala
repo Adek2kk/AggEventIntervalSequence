@@ -1,7 +1,7 @@
 import scala.collection.mutable.ListBuffer
 
 class TestSequences {
-  def setTestSequences(): List[EventIntervalSequance] = {
+  def setTestSequences(): List[EventIntervalSequence] = {
 
     var seqInnerList1 = new ListBuffer[EventsInterval]()
 
@@ -30,7 +30,7 @@ class TestSequences {
     evInt = new EventsInterval(eventsList.toList, null)
     seqInnerList1 += evInt
 
-    var sequence1 = new EventIntervalSequance(1, seqInnerList1.toList)
+    var sequence1 = new EventIntervalSequence(1, seqInnerList1.toList)
     //////////////////////////////////////////////////////////////////////
     var seqInnerList2 = new ListBuffer[EventsInterval]()
 
@@ -59,7 +59,7 @@ class TestSequences {
     evInt2 = new EventsInterval(eventsList2.toList, null)
     seqInnerList2 += evInt2
 
-    var sequence2 = new EventIntervalSequance(2, seqInnerList2.toList)
+    var sequence2 = new EventIntervalSequence(2, seqInnerList2.toList)
 
     //////////////////////////////////////////////////////////////////////
 
@@ -92,11 +92,11 @@ class TestSequences {
     evInt3 = new EventsInterval(eventsList3.toList, null)
     seqInnerList3 += evInt3
 
-    var sequence3 = new EventIntervalSequance(3, seqInnerList3.toList)
+    var sequence3 = new EventIntervalSequence(3, seqInnerList3.toList)
 
     /////////////////////////////////////////////
 
-    var sequencesEI = new ListBuffer[EventIntervalSequance]
+    var sequencesEI = new ListBuffer[EventIntervalSequence]
     sequencesEI += sequence1
     sequencesEI += sequence2
     sequencesEI += sequence3

@@ -5,7 +5,7 @@ import scala.io.Source
 
 class ImportSequence {
 
-  def importSequence(filePath: String): EventIntervalSequance = {
+  def importSequence(filePath: String): EventIntervalSequence = {
     var seqInnerList = new ListBuffer[EventsInterval]()
     var tempEventList = new ListBuffer[Event]()
     try {
@@ -22,6 +22,7 @@ class ImportSequence {
             var tempMap = scala.collection.mutable.Map[String, String]()
             for(attributes <- firstSplit(1).split(';')) {
               var attriAfterSplit = attributes.split(':')
+              //println(attriAfterSplit(0) + " " + attriAfterSplit(1))
               tempMap += (attriAfterSplit(0) -> attriAfterSplit(1))
             }
             tempEventList += new Event(idSeq,timestamp,tempMap)
@@ -58,7 +59,7 @@ class ImportSequence {
       seqInnerList += evInt
 
       bufferedSource.close()
-      return new EventIntervalSequance(idSeq, seqInnerList.toList)
+      return new EventIntervalSequence(idSeq, seqInnerList.toList)
     }
     catch {
       case e: FileNotFoundException => {println("Couldn't find that file: " + filePath);null}
